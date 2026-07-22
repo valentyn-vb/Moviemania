@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+/*
+  Design tokens ported from the old styled-components theme (src/theme.js).
+  Color names are intentionally distinct from Tailwind defaults (no `white`
+  override). Mapping from the old theme:
+    colors.white      -> light
+    colors.text       -> muted
+    colors.accentText -> accent
+    colors.accent     -> accent-soft
+    colors.background -> surface
+    body background   -> page
+  Fonts are wired to next/font CSS variables set on <body> in app/layout.tsx.
+*/
+@theme inline {
+  --color-light: #e8e8e8;
+  --color-muted: #666666;
+  --color-accent: #3dd2cc;
+  --color-accent-soft: rgba(61, 210, 204, 0.4);
+  --color-secondary: #212121;
+  --color-surface: #7b7b7b;
+  --color-page: #191919;
+
+  --font-sans: var(--font-poppins), sans-serif;
+  --font-heading: var(--font-permanent-marker), cursive;
+
+  --text-xs: 12px;
+  --text-s: 14px;
+  --text-m: 18px;
+  --text-l: 32px;
+  --text-xl: 64px;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+
+  --breakpoint-pc: 480px;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 30px;
+  background-color: var(--color-page);
+  color: var(--color-muted);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Base resets carried over from the old index.css (Tailwind preflight covers the rest). */
+h1,
+h2,
+h3,
+p,
+ul {
+  margin: 0;
+  padding: 0;
+}
+
+ul {
+  list-style: none;
+}
