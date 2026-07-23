@@ -4,7 +4,13 @@ import { BsFillStarFill } from "react-icons/bs";
 import { tmdbImg, POSTER_SIZE } from "@/lib/image";
 import type { Movie } from "@/lib/types";
 
-export default function MovieCard({ movie }: { movie: Movie }) {
+export default function MovieCard({
+  movie,
+  action,
+}: {
+  movie: Movie;
+  action?: React.ReactNode;
+}) {
   const title = movie.title ?? movie.name ?? "Untitled";
   const rating =
     typeof movie.vote_average === "number" ? movie.vote_average.toFixed(1) : null;
@@ -36,6 +42,7 @@ export default function MovieCard({ movie }: { movie: Movie }) {
           )}
         </div>
       </Link>
+      {action && <div className="mt-2">{action}</div>}
     </li>
   );
 }

@@ -4,8 +4,13 @@ import { useState } from "react";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { IoClose } from "react-icons/io5";
 import Navigation from "./Navigation";
+import AccountControl from "./AccountControl";
 
-export default function MobileMenu() {
+export default function MobileMenu({
+  user,
+}: {
+  user: { id: string; email: string } | null;
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const close = () => setIsOpen(false);
 
@@ -21,7 +26,7 @@ export default function MobileMenu() {
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-[100000] h-screen w-screen bg-secondary pl-4 pt-8 text-[40px] font-medium">
+        <div className="fixed inset-0 z-[100000] flex h-screen w-screen flex-col bg-secondary pl-4 pt-8 text-[40px] font-medium">
           <button
             type="button"
             aria-label="Close menu"
@@ -31,6 +36,9 @@ export default function MobileMenu() {
             <IoClose />
           </button>
           <Navigation onNavigate={close} />
+          <div className="mb-8 mt-auto pr-4 text-[24px]" onClick={close}>
+            <AccountControl user={user} />
+          </div>
         </div>
       )}
     </div>

@@ -1,10 +1,14 @@
 import Link from "next/link";
 import Navigation from "./Navigation";
 import MobileMenu from "./MobileMenu";
+import AccountControl from "./AccountControl";
+import { getUser } from "@/lib/auth/session";
 
-export default function Header() {
+export default async function Header() {
+  const user = await getUser();
+
   return (
-    <header className="relative flex items-center justify-between bg-secondary py-8 pc:block">
+    <header className="relative flex items-center justify-between bg-secondary py-8 pc:sticky pc:top-0 pc:flex pc:h-screen pc:flex-col pc:items-stretch pc:justify-start pc:overflow-y-auto">
       <Link
         href="/home/trending"
         className="block cursor-pointer pl-8 font-heading text-l text-accent no-underline pc:mb-16"
@@ -12,10 +16,11 @@ export default function Header() {
         Moviemania
       </Link>
 
-      <MobileMenu />
+      <MobileMenu user={user} />
 
-      <div className="hidden pc:block">
+      <div className="hidden pc:flex pc:flex-1 pc:flex-col pc:justify-between">
         <Navigation />
+        <AccountControl user={user} />
       </div>
     </header>
   );
