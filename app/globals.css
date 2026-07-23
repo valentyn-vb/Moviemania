@@ -1,6 +1,15 @@
 @import "tailwindcss";
 
 /*
+  Enables `light:` utilities that apply only under the light theme (data-theme
+  is set on <html> by next-themes). Dark is the default, so almost all theming
+  happens automatically via the token overrides below and needs no variant —
+  this is only for the few spots whose markup differs per theme, like the
+  theme toggle's icon/label.
+*/
+@custom-variant light (&:where([data-theme="light"], [data-theme="light"] *));
+
+/*
   Design tokens ported from the old styled-components theme (src/theme.js).
   Color names are intentionally distinct from Tailwind defaults (no `white`
   override). Mapping from the old theme:
@@ -12,7 +21,12 @@
     body background   -> page
   Fonts are wired to next/font CSS variables set on <body> in app/layout.tsx.
 */
-@theme inline {
+/*
+  Plain (non-inline) @theme: utility classes reference these via var(...)
+  rather than having the literal value baked in at build time, which is what
+  lets the [data-theme="light"] override below actually re-theme components.
+*/
+@theme {
   --color-light: #e8e8e8;
   --color-muted: #666666;
   --color-accent: #3dd2cc;
@@ -20,9 +34,6 @@
   --color-secondary: #212121;
   --color-surface: #7b7b7b;
   --color-page: #191919;
-
-  --font-sans: var(--font-poppins), sans-serif;
-  --font-heading: var(--font-permanent-marker), cursive;
 
   --text-xs: 12px;
   --text-s: 14px;
@@ -35,6 +46,49 @@
   --radius-lg: 16px;
 
   --breakpoint-pc: 480px;
+}
+
+/* `inline` kept only here: these values reference next/font's CSS variables
+   (set on <html> in app/layout.tsx), which Tailwind can't resolve to a
+   static value at build time. */
+@theme inline {
+  --font-sans: var(--font-poppins), sans-serif;
+  --font-heading: var(--font-permanent-marker), cursive;
+}
+
+/*
+  Light theme: overrides the same --color-* custom properties the @theme
+  block above declares. Utilities like `bg-page`/`text-light` read these
+  variables at paint time, so every existing component re-themes with no
+  className changes. --color-muted is intentionally left unset here — its
+  mid-gray value has close to the same contrast against both the dark and
+  light page color, so it stays shared across themes.
+*/
+:root {
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --color-light: #1a1a1a;
+  --color-accent: #0f9b93;
+  --color-accent-soft: rgba(15, 155, 147, 0.14);
+  --color-secondary: #ffffff;
+  --color-surface: #d8d8d8;
+  --color-page: #f2f2f0;
+}
+
+/* Smooth color transition for the theme toggle. Lives in Tailwind's base
+   layer so any component's own transition-* utility (a higher-priority
+   layer) still wins where it's more specific. */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-timing-function: ease;
+    transition-duration: 300ms;
+  }
 }
 
 body {

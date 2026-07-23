@@ -5,6 +5,7 @@ import { GiHamburgerMenu } from "react-icons/gi";
 import { IoClose } from "react-icons/io5";
 import Navigation from "./Navigation";
 import AccountControl from "./AccountControl";
+import ThemeToggle from "./ThemeToggle";
 
 export default function MobileMenu({
   user,
@@ -36,8 +37,11 @@ export default function MobileMenu({
             <IoClose />
           </button>
           <Navigation onNavigate={close} />
-          <div className="mb-8 mt-auto pr-4 text-[24px]" onClick={close}>
-            <AccountControl user={user} />
+          <div className="mb-8 mt-auto pr-4 text-[24px]">
+            <ThemeToggle />
+            <div onClick={close}>
+              <AccountControl user={user} />
+            </div>
           </div>
         </div>
       )}
