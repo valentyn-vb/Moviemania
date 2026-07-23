@@ -36,7 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${poppins.variable} ${permanentMarker.variable}`}>
       <body>
-        <div className="pc:grid pc:h-screen pc:grid-cols-[minmax(256px,290px)_5fr]">
+        <div className="pc:grid pc:min-h-screen pc:grid-cols-[minmax(256px,290px)_5fr]">
           <Header />
           <section className="px-4 py-8">{children}</section>
         </div>

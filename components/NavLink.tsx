@@ -22,8 +22,8 @@ export default function NavLink({
   href,
   children,
   className = "",
-  activeClassName = "",
-  inactiveClassName = "",
+  activeClassName = "text-accent pc:bg-accent-soft pc:border-r-8 pc:border-accent",
+  inactiveClassName = "text-muted hover:text-accent",
   exact = false,
   onNavigate,
 }: NavLinkProps) {

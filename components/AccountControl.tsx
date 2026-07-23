@@ -1,10 +1,10 @@
-import Link from "next/link";
-import { IoLogInOutline, IoLogOutOutline } from "react-icons/io5";
-import { logOut } from "@/lib/auth/logoutAction";
+import { logOut } from '@/lib/auth/logoutAction';
+import Link from 'next/link';
+import { IoLogInOutline, IoLogOutOutline } from 'react-icons/io5';
 
 const linkClass =
-  "flex items-center gap-4 no-underline transition-colors duration-300 mb-6 pc:mb-0 pc:py-6 pc:w-[98%] pc:text-l [&_svg]:w-10 [&_path]:stroke-current";
-const inactiveClass = "text-muted hover:text-accent";
+  'flex items-center gap-4 pl-8 pr-6 no-underline transition-colors duration-300 mb-6 pc:mb-0 pc:py-6 pc:w-[98%] pc:text-l [&_svg]:w-10 [&_path]:stroke-current';
+const inactiveClass = 'text-muted hover:text-accent';
 
 export default function AccountControl({
   user,
@@ -22,7 +22,10 @@ export default function AccountControl({
 
   return (
     <div className="pc:w-[98%]">
-      <p className="mb-2 truncate text-s font-normal text-muted" title={user.email}>
+      <p
+        className="mb-2 truncate pl-8 pr-6 pl-6 text-s font-normal text-muted"
+        title={user.email}
+      >
         {user.email}
       </p>
       <form action={logOut}>
