@@ -15,6 +15,13 @@
       "when": 1784796672026,
       "tag": "0001_peaceful_mysterio",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784812268688,
+      "tag": "0002_common_zarek",
+      "breakpoints": true
     }
   ]
 }
