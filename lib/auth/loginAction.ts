@@ -32,5 +32,5 @@ export async function logIn(
   }
 
   await createSession(user.id);
-  redirect("/home/trending");
+  redirect("/watchlist");
 }
