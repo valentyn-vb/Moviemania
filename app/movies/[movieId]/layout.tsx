@@ -6,9 +6,10 @@ import { tmdbImg } from "@/lib/image";
 import MovieInfo from "@/components/MovieInfo";
 import Crew from "@/components/Crew";
 import Trailer from "@/components/Trailer";
-import WatchlistButton from "@/components/WatchlistButton";
+import MovieActions from "@/components/MovieActions";
 import BackButton from "@/components/BackButton";
 import NavLink from "@/components/NavLink";
+import { getMovieStatus } from "@/app/watchlist/actions";
 
 export async function generateMetadata({
   params,
@@ -52,6 +53,7 @@ export default async function MovieDetailsLayout({
   }
   const { title, overview, genres, videos, release_date, runtime, imdb_id, credits, id } =
     movie;
+  const status = await getMovieStatus(id);
 
   return (
     <div>
@@ -61,7 +63,13 @@ export default async function MovieDetailsLayout({
 
       <div className="mb-4 flex items-center justify-between">
         <MovieInfo release_date={release_date} runtime={runtime} imdb_id={imdb_id} />
-        <WatchlistButton movieId={id} />
+        <MovieActions
+          movieId={id}
+          variant="detail"
+          authed={status.authed}
+          initialWatched={status.watched}
+          initialFavorite={status.favorite}
+        />
       </div>
 
       <div className="mb-8 flex gap-4">
