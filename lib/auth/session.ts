@@ -1,12 +1,12 @@
-import "server-only";
-import { cookies } from "next/headers";
-import { cache } from "react";
-import { SignJWT, jwtVerify } from "jose";
-import { eq } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { users } from "@/lib/db/schema";
+import 'server-only';
+import { cookies } from 'next/headers';
+import { cache } from 'react';
+import { SignJWT, jwtVerify } from 'jose';
+import { eq } from 'drizzle-orm';
+import { db } from '@/lib/db';
+import { users } from '@/lib/db/schema';
 
-const SESSION_COOKIE = "session";
+const SESSION_COOKIE = 'session';
 const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 type SessionPayload = {
@@ -17,24 +17,33 @@ type SessionPayload = {
 function getSecret(): Uint8Array {
   const secret = process.env.SESSION_SECRET;
   if (!secret) {
-    throw new Error("SESSION_SECRET is not set — add it to .env.local (see .env.example).");
+    throw new Error(
+      'SESSION_SECRET is not set — add it to .env.local (see .env.example).'
+    );
   }
   return new TextEncoder().encode(secret);
 }
 
 async function encrypt(payload: SessionPayload): Promise<string> {
   return new SignJWT(payload)
-    .setProtectedHeader({ alg: "HS256" })
+    .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime(new Date(payload.expiresAt))
     .sign(getSecret());
 }
 
-async function decrypt(token: string | undefined): Promise<SessionPayload | null> {
+async function decrypt(
+  token: string | undefined
+): Promise<SessionPayload | null> {
   if (!token) return null;
   try {
-    const { payload } = await jwtVerify(token, getSecret(), { algorithms: ["HS256"] });
-    if (typeof payload.userId === "string" && typeof payload.expiresAt === "number") {
+    const { payload } = await jwtVerify(token, getSecret(), {
+      algorithms: ['HS256'],
+    });
+    if (
+      typeof payload.userId === 'string' &&
+      typeof payload.expiresAt === 'number'
+    ) {
       return { userId: payload.userId, expiresAt: payload.expiresAt };
     }
     return null;
@@ -50,9 +59,9 @@ export async function createSession(userId: string): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
     expires: new Date(expiresAt),
   });
 }
@@ -70,13 +79,15 @@ export const getSession = cache(async (): Promise<SessionPayload | null> => {
 });
 
 /** The current user as a minimal DTO, or null. Memoized per request. */
-export const getUser = cache(async (): Promise<{ id: string; email: string } | null> => {
-  const session = await getSession();
-  if (!session) return null;
-  const [user] = await db
-    .select({ id: users.id, email: users.email })
-    .from(users)
-    .where(eq(users.id, session.userId))
-    .limit(1);
-  return user ?? null;
-});
+export const getUser = cache(
+  async (): Promise<{ id: string; email: string } | null> => {
+    const session = await getSession();
+    if (!session) return null;
+    const [user] = await db
+      .select({ id: users.id, email: users.email })
+      .from(users)
+      .where(eq(users.id, session.userId))
+      .limit(1);
+    return user ?? null;
+  }
+);
