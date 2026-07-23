@@ -1,7 +1,6 @@
 "use client";
 
 import { GrHomeRounded } from "react-icons/gr";
-import { IoFilmOutline } from "react-icons/io5";
 import { BsBookmarkFill } from "react-icons/bs";
 import NavLink from "./NavLink";
 
@@ -12,8 +11,7 @@ const activeClass = "text-accent pc:bg-accent-soft pc:border-r-8 pc:border-accen
 
 const links = [
   { href: "/home", label: "Home", Icon: GrHomeRounded },
-  { href: "/movies", label: "Movies", Icon: IoFilmOutline },
-  { href: "/watchlist", label: "Watchlist", Icon: BsBookmarkFill },
+  { href: "/watchlist", label: "Collection", Icon: BsBookmarkFill },
 ];
 
 export default function Navigation({ onNavigate }: { onNavigate?: () => void }) {
