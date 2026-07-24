@@ -42,5 +42,5 @@ export async function registerUser(
     .returning({ id: users.id });
 
   await createSession(created.id);
-  redirect("/home/trending");
+  redirect("/home/movie/trending");
 }

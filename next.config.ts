@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       // Landing route: send "/" straight to the default category tab.
-      { source: "/", destination: "/home/trending", permanent: false },
+      { source: "/", destination: "/home/movie/trending", permanent: false },
     ];
   },
 };

@@ -9,8 +9,9 @@ import {
   IoHeart,
   IoHeartOutline,
 } from "react-icons/io5";
-import { useWatchlist, toggleWatchlist } from "@/lib/watchlist";
+import { useWatchlist, toggleWatchlist, isInWatchlist } from "@/lib/watchlist";
 import { toggleWatched, toggleFavorite } from "@/app/watchlist/actions";
+import type { MediaType } from "@/lib/types";
 
 type Variant = "detail" | "card";
 type IconType = React.ComponentType<{ className?: string }>;
@@ -60,6 +61,7 @@ function IconToggle({
 
 export default function MovieActions({
   movieId,
+  mediaType,
   authed,
   initialWatched = false,
   initialFavorite = false,
@@ -68,6 +70,7 @@ export default function MovieActions({
   onFavoriteChange,
 }: {
   movieId: number;
+  mediaType: MediaType;
   authed: boolean;
   initialWatched?: boolean;
   initialFavorite?: boolean;
@@ -76,8 +79,8 @@ export default function MovieActions({
   onFavoriteChange?: (favorite: boolean) => void;
 }) {
   const router = useRouter();
-  const watchlistIds = useWatchlist();
-  const inWatchlist = watchlistIds.includes(Number(movieId));
+  const watchlistItems = useWatchlist();
+  const inWatchlist = isInWatchlist(watchlistItems, movieId, mediaType);
   const [watched, setWatched] = useState(initialWatched);
   const [favorite, setFavorite] = useState(initialFavorite);
   const [, startTransition] = useTransition();
@@ -94,7 +97,7 @@ export default function MovieActions({
     onWatchedChange?.(next);
     startTransition(async () => {
       try {
-        const { watched: server } = await toggleWatched(movieId);
+        const { watched: server } = await toggleWatched(movieId, mediaType);
         setWatched(server);
         onWatchedChange?.(server);
       } catch {
@@ -115,7 +118,7 @@ export default function MovieActions({
     onFavoriteChange?.(next);
     startTransition(async () => {
       try {
-        const { favorite: server } = await toggleFavorite(movieId);
+        const { favorite: server } = await toggleFavorite(movieId, mediaType);
         setFavorite(server);
         onFavoriteChange?.(server);
       } catch {
@@ -130,7 +133,7 @@ export default function MovieActions({
       <IconToggle
         active={inWatchlist}
         label={inWatchlist ? "Remove from Watch List" : "Add to Watch List"}
-        onClick={() => toggleWatchlist(movieId)}
+        onClick={() => toggleWatchlist(movieId, mediaType)}
         ActiveIcon={BsBookmarkFill}
         InactiveIcon={BsBookmark}
         sizeClass={sizeClass}

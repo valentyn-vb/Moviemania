@@ -9,7 +9,7 @@ export default function BackButton() {
   const goBack = () => {
     // Prefer real history; fall back to the default listing on a cold entry.
     if (window.history.length > 1) router.back();
-    else router.push("/home/trending");
+    else router.push("/home/movie/trending");
   };
 
   return (

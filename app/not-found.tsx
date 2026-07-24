@@ -6,7 +6,7 @@ export default function NotFound() {
       <p className="mb-4 font-normal">
         Ooops... The page you are looking for wasn&apos;t found
       </p>
-      <Link href="/home/trending" className="text-accent">
+      <Link href="/home/movie/trending" className="text-accent">
         Back to Movies
       </Link>
     </div>
