@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import { logOut } from '@/lib/auth/logoutAction';
+import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react';
 import {
-  IoPersonCircleOutline,
   IoChevronDown,
   IoLogInOutline,
   IoLogOutOutline,
-} from "react-icons/io5";
-import ThemeToggle from "./ThemeToggle";
-import { logOut } from "@/lib/auth/logoutAction";
+  IoPersonCircleOutline,
+} from 'react-icons/io5';
+import ThemeToggle from './ThemeToggle';
 
 const triggerClass =
-  "flex w-full items-center gap-4 border-none bg-transparent pl-8 pr-6 text-left text-muted no-underline transition-colors duration-300 hover:text-accent pc:py-6 pc:w-[98%] pc:text-l [&_svg]:w-10";
+  'flex w-full items-center gap-4 border-none bg-transparent pl-8 pr-6 text-left text-muted no-underline transition-colors duration-300 hover:text-accent pc:py-6 pc:w-[98%] pc:text-l [&_svg]:w-10';
 const itemClass =
-  "flex w-full items-center gap-3 border-none bg-transparent px-4 py-3 text-left text-muted no-underline transition-colors duration-300 hover:text-accent [&_svg]:w-6";
+  'flex w-full items-center gap-3 border-none bg-transparent px-4 py-3 text-left text-muted no-underline transition-colors duration-300 hover:text-accent [&_svg]:w-6';
 
 // Account/settings dropdown holding the theme switch and Sign out (or Sign in
 // when signed out). Opens upward since it lives at the bottom of the sidebar /
@@ -32,16 +32,17 @@ export default function AccountMenu({
   useEffect(() => {
     if (!open) return;
     const onPointerDown = (e: PointerEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setOpen(false);
     };
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === 'Escape') setOpen(false);
     };
-    document.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
     return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
     };
   }, [open]);
 
@@ -78,15 +79,15 @@ export default function AccountMenu({
         type="button"
         aria-haspopup="menu"
         aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen(v => !v)}
         className={`${triggerClass} cursor-pointer`}
       >
         <IoPersonCircleOutline />
-        <span className="min-w-0 flex-1 truncate" title={user?.email}>
-          {user ? user.email : "Account"}
+        <span className="min-w-0 flex-1 truncate text-sm " title={user?.email}>
+          {user ? user.email : 'Account'}
         </span>
         <IoChevronDown
-          className={`!w-5 shrink-0 transition-transform duration-300 ${open ? "" : "rotate-180"}`}
+          className={`!w-5 shrink-0 transition-transform duration-300 ${open ? '' : 'rotate-180'}`}
         />
       </button>
     </div>
