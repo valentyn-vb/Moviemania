@@ -18,9 +18,18 @@ export const watchedMovies = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     movieId: integer("movie_id").notNull(),
+    // "movie" | "tv" — a movie and a tv show can share an id, so it's part of
+    // the uniqueness key. Existing rows backfill to "movie".
+    mediaType: text("media_type").notNull().default("movie"),
     watchedAt: timestamp("watched_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [unique("watched_movies_user_movie_unique").on(table.userId, table.movieId)]
+  (table) => [
+    unique("watched_movies_user_movie_unique").on(
+      table.userId,
+      table.movieId,
+      table.mediaType
+    ),
+  ]
 );
 
 export type WatchedMovie = typeof watchedMovies.$inferSelect;
@@ -34,9 +43,17 @@ export const favoriteMovies = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     movieId: integer("movie_id").notNull(),
+    // "movie" | "tv" — see watched_movies. Existing rows backfill to "movie".
+    mediaType: text("media_type").notNull().default("movie"),
     favoritedAt: timestamp("favorited_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [unique("favorite_movies_user_movie_unique").on(table.userId, table.movieId)]
+  (table) => [
+    unique("favorite_movies_user_movie_unique").on(
+      table.userId,
+      table.movieId,
+      table.mediaType
+    ),
+  ]
 );
 
 export type FavoriteMovie = typeof favoriteMovies.$inferSelect;

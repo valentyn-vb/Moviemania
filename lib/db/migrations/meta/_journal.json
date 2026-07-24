@@ -22,6 +22,13 @@
       "when": 1784812268688,
       "tag": "0002_common_zarek",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1784837722462,
+      "tag": "0003_woozy_millenium_guard",
+      "breakpoints": true
     }
   ]
 }
