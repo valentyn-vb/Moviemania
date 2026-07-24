@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
-// The "Home" nav link points at /home; send it to the default tab.
+// The "Movies" nav link points at /home/movie; a bare /home lands on the
+// default movie tab.
 export default function HomePage() {
-  redirect("/home/trending");
+  redirect("/home/movie/trending");
 }
