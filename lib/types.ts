@@ -1,6 +1,11 @@
 // Shared TMDB response shapes. Type-only, so safe to import from both
 // server and client components.
 
+// The two kinds of title Moviemania browses. Threaded from the TMDB fetch edge
+// through routing, cards, and the watchlist/collection persistence so a movie
+// and a TV show (whose TMDB ids are NOT globally unique) never get confused.
+export type MediaType = "movie" | "tv";
+
 export interface Movie {
   id: number;
   title?: string;
@@ -8,7 +13,13 @@ export interface Movie {
   poster_path: string | null;
   vote_average?: number;
   release_date?: string;
-  media_type?: string;
+  media_type?: MediaType;
+}
+
+/** A movie/tv reference as stored in the watchlist and DB collections. */
+export interface WatchlistItem {
+  id: number;
+  mediaType: MediaType;
 }
 
 export interface MoviePage {
@@ -52,6 +63,9 @@ export interface Video {
   site: string;
 }
 
+// Normalized detail shape. TV payloads are mapped into this at the fetch edge
+// (name -> title, first_air_date -> release_date, episode_run_time -> runtime,
+// external_ids.imdb_id -> imdb_id) so the detail UI is media-agnostic.
 export interface MovieDetails {
   id: number;
   title: string;
@@ -66,4 +80,5 @@ export interface MovieDetails {
   credits: { cast: CastMember[]; crew: CrewMember[] };
   reviews: { results: Review[] };
   videos: { results: Video[] };
+  media_type: MediaType;
 }
