@@ -1,8 +1,7 @@
 import Link from "next/link";
 import Navigation from "./Navigation";
 import MobileMenu from "./MobileMenu";
-import AccountControl from "./AccountControl";
-import ThemeToggle from "./ThemeToggle";
+import AccountMenu from "./AccountMenu";
 import { getUser } from "@/lib/auth/session";
 
 export default async function Header() {
@@ -21,10 +20,7 @@ export default async function Header() {
 
       <div className="hidden pc:flex pc:flex-1 pc:flex-col pc:justify-between">
         <Navigation />
-        <div>
-          <ThemeToggle />
-          <AccountControl user={user} />
-        </div>
+        <AccountMenu user={user} />
       </div>
     </header>
   );

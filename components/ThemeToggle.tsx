@@ -3,10 +3,10 @@
 import { useTheme } from 'next-themes';
 import { IoMoonOutline, IoSunnyOutline } from 'react-icons/io5';
 
-const linkClass =
+const defaultClass =
   'flex w-full items-center gap-4 border-none bg-transparent pl-8 pr-6 text-left text-muted no-underline transition-colors duration-300 hover:text-accent mb-6 pc:mb-0 pc:py-6 pc:w-[98%] pc:text-l [&_svg]:w-10';
 
-export default function ThemeToggle() {
+export default function ThemeToggle({ className = defaultClass }: { className?: string }) {
   const { resolvedTheme, setTheme } = useTheme();
 
   // The markup is identical on the server and client — the `light:` variant
@@ -18,7 +18,7 @@ export default function ThemeToggle() {
     <button
       type="button"
       onClick={() => setTheme(resolvedTheme === 'light' ? 'dark' : 'light')}
-      className={linkClass}
+      className={className}
     >
       <span className="light:hidden">Light mode</span>
       <IoSunnyOutline className="light:hidden" />
