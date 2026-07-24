@@ -3,19 +3,19 @@ import type { Metadata } from "next";
 import Searchbar from "@/components/Searchbar";
 import MovieList from "@/components/MovieList";
 import Loader from "@/components/Loader";
-import { searchMovies } from "@/lib/tmdb";
+import { searchTitles } from "@/lib/tmdb";
 
 export const metadata: Metadata = { title: "Search" };
 
 async function SearchResults({ query }: { query: string }) {
-  const data = await searchMovies(query, 1);
+  const data = await searchTitles("movie", query, 1);
   return (
     <MovieList
       key={`query:${query}`}
       initialMovies={data.results}
       initialPage={data.page}
       totalPages={data.total_pages}
-      queryString={`query=${encodeURIComponent(query)}`}
+      queryString={`media=movie&query=${encodeURIComponent(query)}`}
     />
   );
 }

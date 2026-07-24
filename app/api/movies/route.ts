@@ -1,20 +1,25 @@
-import { getMoviesByCategory, searchMovies, isCategory } from "@/lib/tmdb";
+import { getListing, searchTitles, isCategory, isMediaType } from "@/lib/tmdb";
 
-// GET /api/movies?category=trending&page=2  OR  ?query=batman&page=2
+// GET /api/movies?media=movie&category=trending&page=2  OR  ?media=tv&query=batman&page=2
 // Runs server-side (key stays hidden), CDN-cacheable for category reads.
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const page = Number(searchParams.get("page") ?? "1");
   const query = searchParams.get("query");
   const category = searchParams.get("category");
+  const media = searchParams.get("media") ?? "movie";
+
+  if (!isMediaType(media)) {
+    return Response.json({ error: "Invalid media type" }, { status: 400 });
+  }
 
   try {
     if (query) {
-      const data = await searchMovies(query, page);
+      const data = await searchTitles(media, query, page);
       return Response.json(data);
     }
-    if (category && isCategory(category)) {
-      const data = await getMoviesByCategory(category, page);
+    if (category && isCategory(media, category)) {
+      const data = await getListing(media, category, page);
       return Response.json(data, {
         headers: { "Cache-Control": "s-maxage=3600, stale-while-revalidate" },
       });

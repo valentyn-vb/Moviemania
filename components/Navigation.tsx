@@ -1,6 +1,7 @@
 "use client";
 
-import { GrHomeRounded } from "react-icons/gr";
+import { BiCameraMovie } from "react-icons/bi";
+import { MdLiveTv } from "react-icons/md";
 import { BsBookmarkFill } from "react-icons/bs";
 import NavLink from "./NavLink";
 
@@ -8,7 +9,8 @@ const linkClass =
   "flex items-center gap-4 pl-8 pr-6 no-underline transition-colors duration-300 mb-6 pc:mb-0 pc:py-6 pc:w-[98%] pc:text-l [&_svg]:w-10 [&_path]:stroke-current";
 
 const links = [
-  { href: "/home", label: "Home", Icon: GrHomeRounded },
+  { href: "/home/movie", label: "Movies", Icon: BiCameraMovie },
+  { href: "/home/tv", label: "TV Shows", Icon: MdLiveTv },
   { href: "/watchlist", label: "Collection", Icon: BsBookmarkFill },
 ];
 

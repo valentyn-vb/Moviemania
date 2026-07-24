@@ -14,10 +14,11 @@ export default function MovieCard({
   const title = movie.title ?? movie.name ?? "Untitled";
   const rating =
     typeof movie.vote_average === "number" ? movie.vote_average.toFixed(1) : null;
+  const href = movie.media_type === "tv" ? `/tv/${movie.id}` : `/movies/${movie.id}`;
 
   return (
     <li className="w-[60vw] max-w-[300px] pc:w-[200px]">
-      <Link href={`/movies/${movie.id}`} className="block">
+      <Link href={href} className="block">
         <div className="relative overflow-hidden rounded-[20px] border border-muted transition duration-300 hover:scale-[1.03] hover:shadow-[0px_2px_2px_rgba(255,255,255,0.12),0px_5px_5px_rgba(255,255,255,0.06),2px_5px_7px_rgba(255,255,255,0.16)]">
           <div className="relative aspect-[2/3] w-full bg-secondary">
             {movie.poster_path ? (
