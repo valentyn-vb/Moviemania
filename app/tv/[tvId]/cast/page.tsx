@@ -4,10 +4,10 @@ import CastGrid from "@/components/CastGrid";
 export default async function CastPage({
   params,
 }: {
-  params: Promise<{ movieId: string }>;
+  params: Promise<{ tvId: string }>;
 }) {
-  const { movieId } = await params;
+  const { tvId } = await params;
   // Deduped with the layout's fetch via cache() — no extra TMDB call.
-  const movie = await getTitleDetails("movie", movieId);
-  return <CastGrid cast={movie.credits.cast} />;
+  const show = await getTitleDetails("tv", tvId);
+  return <CastGrid cast={show.credits.cast} />;
 }
