@@ -34,6 +34,27 @@ export interface Genre {
   name: string;
 }
 
+/** One combined_credits entry: a browsable title plus what the person did on it. */
+export interface PersonCredit extends Movie {
+  /** `character` for a cast credit, `job` for a crew one. "" when TMDB has neither. */
+  role: string;
+  /** Not rendered — this is what the filmography is ordered by. */
+  vote_count?: number;
+}
+
+export interface PersonDetails {
+  id: number;
+  name: string;
+  biography: string;
+  birthday: string | null;
+  deathday: string | null;
+  place_of_birth: string | null;
+  known_for_department: string;
+  profile_path: string | null;
+  /** Deduped and sorted by vote count — see getPerson. */
+  credits: PersonCredit[];
+}
+
 export interface CastMember {
   id: number;
   name: string;

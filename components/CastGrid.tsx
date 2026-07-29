@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Image from "next/image";
 import { tmdbImg, PROFILE_SIZE } from "@/lib/image";
 import type { CastMember } from "@/lib/types";
@@ -17,22 +18,24 @@ export default function CastGrid({ cast }: { cast: CastMember[] }) {
           key={actor.id}
           className="overflow-hidden rounded-md border border-muted transition duration-300 hover:scale-[1.03]"
         >
-          <div className="relative aspect-[2/3] w-full bg-secondary">
-            <Image
-              src={tmdbImg(actor.profile_path as string, PROFILE_SIZE)}
-              alt={actor.name}
-              fill
-              sizes="(max-width: 479px) 50vw, 14vw"
-              className="object-cover"
-            />
-          </div>
-          <div className="p-[6px]">
-            <p className="font-normal leading-5 text-light">{actor.name}</p>
-            <p className="font-normal leading-5 text-light">
-              <b>Character: </b>
-              {actor.character}
-            </p>
-          </div>
+          <Link href={`/person/${actor.id}`} className="block">
+            <div className="relative aspect-[2/3] w-full bg-secondary">
+              <Image
+                src={tmdbImg(actor.profile_path as string, PROFILE_SIZE)}
+                alt={actor.name}
+                fill
+                sizes="(max-width: 479px) 50vw, 14vw"
+                className="object-cover"
+              />
+            </div>
+            <div className="p-[6px]">
+              <p className="font-normal leading-5 text-light">{actor.name}</p>
+              <p className="font-normal leading-5 text-light">
+                <b>Character: </b>
+                {actor.character}
+              </p>
+            </div>
+          </Link>
         </li>
       ))}
     </ul>

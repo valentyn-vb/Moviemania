@@ -1,7 +1,16 @@
 import "server-only";
 import { cache } from "react";
 import { toDiscoverParams, type Filters } from "./filters";
-import type { Genre, MediaType, Movie, MovieDetails, MoviePage, WatchlistItem } from "./types";
+import type {
+  Genre,
+  MediaType,
+  Movie,
+  MovieDetails,
+  MoviePage,
+  PersonCredit,
+  PersonDetails,
+  WatchlistItem,
+} from "./types";
 
 const BASE_URL = "https://api.themoviedb.org/3";
 
@@ -173,6 +182,79 @@ export const getTitleDetails = cache(
     );
   }
 );
+
+// A combined_credits row. TMDB stamps a real media_type on each one (unlike
+// list endpoints), and carries the role under `character` or `job` depending on
+// which of the two arrays it came from.
+interface RawCredit extends Movie {
+  character?: string;
+  job?: string;
+  vote_count?: number;
+}
+
+interface RawPerson {
+  id: number;
+  name: string;
+  biography: string | null;
+  birthday: string | null;
+  deathday: string | null;
+  place_of_birth: string | null;
+  known_for_department: string | null;
+  profile_path: string | null;
+  combined_credits: { cast: RawCredit[]; crew: RawCredit[] };
+}
+
+/**
+ * Flattens cast + crew into one filmography.
+ *
+ * Sorted by vote_count, NOT popularity. TMDB's `popularity` is a recency and
+ * traffic metric, so sorting by it buries the work someone is actually known
+ * for under talk-show drop-ins — Bryan Cranston's top credits come back as
+ * Colbert, Fallon and Seth Meyers rather than Breaking Bad.
+ *
+ * Deduped because the same title recurs under several credit_ids (54 repeats
+ * across Spielberg's crew list alone).
+ */
+function normalizeCredits(raw: RawPerson["combined_credits"]): PersonCredit[] {
+  const byTitle = new Map<string, PersonCredit>();
+
+  // Cast first, so an acting role wins over a crew job on a title where the
+  // person did both.
+  for (const item of [...raw.cast, ...raw.crew]) {
+    const media: MediaType = item.media_type ?? "movie";
+    const key = `${media}:${item.id}`;
+    if (byTitle.has(key)) continue;
+    byTitle.set(key, {
+      ...item,
+      title: item.title ?? item.name,
+      media_type: media,
+      role: item.character || item.job || "",
+    });
+  }
+
+  return [...byTitle.values()].sort((a, b) => (b.vote_count ?? 0) - (a.vote_count ?? 0));
+}
+
+// cache()-wrapped so generateMetadata and the page body share one request, the
+// same way getTitleDetails is shared across the detail layout and its tabs.
+export const getPerson = cache(async (id: string): Promise<PersonDetails> => {
+  const raw = await tmdbFetch<RawPerson>(
+    `person/${id}`,
+    { append_to_response: "combined_credits" },
+    3600
+  );
+  return {
+    id: raw.id,
+    name: raw.name,
+    biography: raw.biography ?? "",
+    birthday: raw.birthday,
+    deathday: raw.deathday,
+    place_of_birth: raw.place_of_birth,
+    known_for_department: raw.known_for_department ?? "",
+    profile_path: raw.profile_path,
+    credits: normalizeCredits(raw.combined_credits),
+  };
+});
 
 export async function getTitlesByRef(refs: WatchlistItem[]): Promise<MovieDetails[]> {
   const settled = await Promise.allSettled(
