@@ -29,9 +29,12 @@ export default async function Recommendations({
   if (items.length === 0) return null;
 
   return (
-    <section className="mt-8">
-      <h3 className="mb-4 font-normal text-light">More Like This</h3>
-      <ul className="mt-8 flex flex-col items-center gap-8 pc:flex-row pc:flex-wrap pc:justify-center">
+    // Spaced with flex `gap` rather than margins on the h3/ul: globals.css
+    // zeroes those elements' margins from an unlayered rule, which outranks
+    // Tailwind's margin utilities.
+    <section className="mt-8 flex flex-col gap-4">
+      <h3 className="font-normal text-light">More Like This</h3>
+      <ul className="flex flex-col items-center gap-8 pc:flex-row pc:flex-wrap pc:justify-center">
         {items.slice(0, LIMIT).map((movie) => (
           <MovieCard key={movie.id} movie={movie} />
         ))}
