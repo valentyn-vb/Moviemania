@@ -4,8 +4,12 @@ import { useEffect, useState } from "react";
 import MovieCard from "@/components/MovieCard";
 import MovieActions from "@/components/MovieActions";
 import Loader from "@/components/Loader";
-import { getWatchlistItems, useWatchlist } from "@/lib/watchlist";
-import { fetchWatchlistMovies, getWatched, getFavorites } from "@/app/watchlist/actions";
+import {
+  fetchWatchlistMovies,
+  getWatchlist,
+  getWatched,
+  getFavorites,
+} from "@/app/watchlist/actions";
 import type { MediaType, MovieDetails } from "@/lib/types";
 
 export type CollectionKind = "watchlist" | "watched" | "favorites";
@@ -23,27 +27,23 @@ function keyOf(mediaType: MediaType, id: number): string {
 
 export default function CollectionList({ kind }: { kind: CollectionKind }) {
   const [movies, setMovies] = useState<MovieDetails[] | null>(null);
+  const [watchlistKeys, setWatchlistKeys] = useState<Set<string>>(new Set());
   const [watchedKeys, setWatchedKeys] = useState<Set<string>>(new Set());
   const [favoriteKeys, setFavoriteKeys] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
-  // Watchlist lives in localStorage; the shared store keeps this reactive so a
-  // title removed from the watch list disappears from the list immediately.
-  const watchlistItems = useWatchlist();
 
   useEffect(() => {
     let cancelled = false;
-    // Read watchlist items after mount (localStorage is client-only), then fetch
-    // the account's watched + favorite refs. We load all three sets so each
-    // card's toggles show the right state, but only hydrate details for the
-    // list this route displays.
-    const listItems = getWatchlistItems();
-    Promise.all([getWatched(), getFavorites()])
-      .then(async ([watched, favorites]) => {
+    // Load all three sets so each card's toggles show the right state, but only
+    // hydrate details for the list this route displays.
+    Promise.all([getWatchlist(), getWatched(), getFavorites()])
+      .then(async ([watchlist, watched, favorites]) => {
         const displayRefs =
-          kind === "watchlist" ? listItems : kind === "watched" ? watched : favorites;
+          kind === "watchlist" ? watchlist : kind === "watched" ? watched : favorites;
         const results = await fetchWatchlistMovies(displayRefs);
         if (cancelled) return;
         setMovies(results);
+        setWatchlistKeys(new Set(watchlist.map((r) => keyOf(r.mediaType, r.id))));
         setWatchedKeys(new Set(watched.map((r) => keyOf(r.mediaType, r.id))));
         setFavoriteKeys(new Set(favorites.map((r) => keyOf(r.mediaType, r.id))));
       })
@@ -72,11 +72,7 @@ export default function CollectionList({ kind }: { kind: CollectionKind }) {
   if (movies === null) return <Loader />;
 
   const membership =
-    kind === "watchlist"
-      ? new Set(watchlistItems.map((it) => keyOf(it.mediaType, it.id)))
-      : kind === "watched"
-        ? watchedKeys
-        : favoriteKeys;
+    kind === "watchlist" ? watchlistKeys : kind === "watched" ? watchedKeys : favoriteKeys;
   const activeList = movies.filter((movie) => membership.has(keyOf(movie.media_type, movie.id)));
 
   if (activeList.length === 0) {
@@ -97,8 +93,10 @@ export default function CollectionList({ kind }: { kind: CollectionKind }) {
                 mediaType={movie.media_type}
                 authed
                 variant="card"
+                initialWatchlisted={watchlistKeys.has(key)}
                 initialWatched={watchedKeys.has(key)}
                 initialFavorite={favoriteKeys.has(key)}
+                onWatchlistChange={(member) => markMembership(setWatchlistKeys, key, member)}
                 onWatchedChange={(member) => markMembership(setWatchedKeys, key, member)}
                 onFavoriteChange={(member) => markMembership(setFavoriteKeys, key, member)}
               />

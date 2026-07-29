@@ -9,8 +9,7 @@ import {
   IoHeart,
   IoHeartOutline,
 } from "react-icons/io5";
-import { useWatchlist, toggleWatchlist, isInWatchlist } from "@/lib/watchlist";
-import { toggleWatched, toggleFavorite } from "@/app/watchlist/actions";
+import { toggleWatchlist, toggleWatched, toggleFavorite } from "@/app/watchlist/actions";
 import type { MediaType } from "@/lib/types";
 
 type Variant = "detail" | "card";
@@ -63,29 +62,53 @@ export default function MovieActions({
   movieId,
   mediaType,
   authed,
+  initialWatchlisted = false,
   initialWatched = false,
   initialFavorite = false,
   variant = "card",
+  onWatchlistChange,
   onWatchedChange,
   onFavoriteChange,
 }: {
   movieId: number;
   mediaType: MediaType;
   authed: boolean;
+  initialWatchlisted?: boolean;
   initialWatched?: boolean;
   initialFavorite?: boolean;
   variant?: Variant;
+  onWatchlistChange?: (watchlisted: boolean) => void;
   onWatchedChange?: (watched: boolean) => void;
   onFavoriteChange?: (favorite: boolean) => void;
 }) {
   const router = useRouter();
-  const watchlistItems = useWatchlist();
-  const inWatchlist = isInWatchlist(watchlistItems, movieId, mediaType);
+  const [watchlisted, setWatchlisted] = useState(initialWatchlisted);
   const [watched, setWatched] = useState(initialWatched);
   const [favorite, setFavorite] = useState(initialFavorite);
   const [, startTransition] = useTransition();
 
   const sizeClass = SIZE[variant];
+
+  function handleWatchlist() {
+    if (!authed) {
+      router.push("/sign-in");
+      return;
+    }
+    const next = !watchlisted;
+    setWatchlisted(next);
+    onWatchlistChange?.(next);
+    startTransition(async () => {
+      try {
+        const { watchlisted: server } = await toggleWatchlist(movieId, mediaType);
+        setWatchlisted(server);
+        onWatchlistChange?.(server);
+      } catch {
+        // Revert the optimistic flip if the server call failed.
+        setWatchlisted(!next);
+        onWatchlistChange?.(!next);
+      }
+    });
+  }
 
   function handleWatched() {
     if (!authed) {
@@ -101,7 +124,6 @@ export default function MovieActions({
         setWatched(server);
         onWatchedChange?.(server);
       } catch {
-        // Revert the optimistic flip if the server call failed.
         setWatched(!next);
         onWatchedChange?.(!next);
       }
@@ -131,9 +153,9 @@ export default function MovieActions({
   return (
     <div className="flex items-center justify-center gap-6">
       <IconToggle
-        active={inWatchlist}
-        label={inWatchlist ? "Remove from Watch List" : "Add to Watch List"}
-        onClick={() => toggleWatchlist(movieId, mediaType)}
+        active={watchlisted}
+        label={watchlisted ? "Remove from Watch List" : "Add to Watch List"}
+        onClick={handleWatchlist}
         ActiveIcon={BsBookmarkFill}
         InactiveIcon={BsBookmark}
         sizeClass={sizeClass}

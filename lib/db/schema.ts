@@ -58,3 +58,27 @@ export const favoriteMovies = pgTable(
 
 export type FavoriteMovie = typeof favoriteMovies.$inferSelect;
 export type NewFavoriteMovie = typeof favoriteMovies.$inferInsert;
+
+export const watchlistMovies = pgTable(
+  "watchlist_movies",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    movieId: integer("movie_id").notNull(),
+    // "movie" | "tv" — see watched_movies.
+    mediaType: text("media_type").notNull().default("movie"),
+    addedAt: timestamp("added_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    unique("watchlist_movies_user_movie_unique").on(
+      table.userId,
+      table.movieId,
+      table.mediaType
+    ),
+  ]
+);
+
+export type WatchlistMovie = typeof watchlistMovies.$inferSelect;
+export type NewWatchlistMovie = typeof watchlistMovies.$inferInsert;

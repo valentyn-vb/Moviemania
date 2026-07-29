@@ -55,6 +55,7 @@ export default async function TitleDetailLayout({
           mediaType={mediaType}
           variant="detail"
           authed={status.authed}
+          initialWatchlisted={status.watchlisted}
           initialWatched={status.watched}
           initialFavorite={status.favorite}
         />
