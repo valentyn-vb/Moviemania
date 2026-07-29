@@ -1,44 +1,17 @@
 import "server-only";
 import { cache } from "react";
-import type { MediaType, Movie, MovieDetails, MoviePage, WatchlistItem } from "./types";
+import { toDiscoverParams, type Filters } from "./filters";
+import type { Genre, MediaType, Movie, MovieDetails, MoviePage, WatchlistItem } from "./types";
 
 const BASE_URL = "https://api.themoviedb.org/3";
 
-// Category feeds per media type. Movies keep trending/upcoming/top_rated; TV
-// gets its own reasonable set (there's no "upcoming" TV feed). Trending uses the
-// media-specific /movie or /tv path — the old /trending/all/week mixed both and
-// returned items missing title/name.
-const CATEGORY_PATHS = {
-  movie: {
-    trending: "trending/movie/week",
-    upcoming: "movie/upcoming",
-    top_rated: "movie/top_rated",
-  },
-  tv: {
-    trending: "trending/tv/week",
-    popular: "tv/popular",
-    top_rated: "tv/top_rated",
-  },
-} as const;
+// TMDB refuses pages past 500 on every paginated endpoint, but still reports a
+// far larger total_pages (10,000 for popular). Clamping here keeps infinite
+// scroll from walking off the end into a 400.
+const MAX_PAGE = 500;
 
 export function isMediaType(value: string): value is MediaType {
   return value === "movie" || value === "tv";
-}
-
-export function isCategory(media: MediaType, value: string): boolean {
-  return value in CATEGORY_PATHS[media];
-}
-
-/** Ordered category keys for a media type (drives the browse tabs). */
-export function getCategories(media: MediaType): string[] {
-  return Object.keys(CATEGORY_PATHS[media]);
-}
-
-/** All (mediaType, category) pairs — used by generateStaticParams. */
-export function getMediaCategoryParams(): { mediaType: MediaType; category: string }[] {
-  return (Object.keys(CATEGORY_PATHS) as MediaType[]).flatMap((mediaType) =>
-    getCategories(mediaType).map((category) => ({ mediaType, category }))
-  );
 }
 
 function apiKey(): string {
@@ -80,18 +53,41 @@ function normalizeListItem(item: Movie, media: MediaType): Movie {
 }
 
 function normalizePage(page: MoviePage, media: MediaType): MoviePage {
-  return { ...page, results: page.results.map((item) => normalizeListItem(item, media)) };
+  return {
+    ...page,
+    total_pages: Math.min(page.total_pages, MAX_PAGE),
+    results: page.results.map((item) => normalizeListItem(item, media)),
+  };
 }
 
-export async function getListing(
+/**
+ * The browse listing. Every category the UI offers is expressed as /discover
+ * params (see lib/filters.ts) rather than a curated feed like /movie/top_rated,
+ * because the curated endpoints accept no filter params at all — so this is the
+ * only way sort and filters compose.
+ */
+export async function discoverTitles(
   media: MediaType,
-  category: string,
+  filters: Filters,
   page = 1
 ): Promise<MoviePage> {
-  const paths = CATEGORY_PATHS[media] as Record<string, string>;
-  const data = await tmdbFetch<MoviePage>(paths[category], { page }, 3600);
+  const data = await tmdbFetch<MoviePage>(
+    `discover/${media}`,
+    { ...toDiscoverParams(media, filters), page: Math.min(Math.max(page, 1), MAX_PAGE) },
+    3600
+  );
   return normalizePage(data, media);
 }
+
+/**
+ * Genre ids and names differ between movie and tv (TV has "Sci-Fi & Fantasy"
+ * 10765 where movies have "Science Fiction" 878), so the lists are fetched
+ * rather than hardcoded. Cached a day — they effectively never change.
+ */
+export const getGenres = cache(async (media: MediaType): Promise<Genre[]> => {
+  const data = await tmdbFetch<{ genres: Genre[] }>(`genre/${media}/list`, {}, 86400);
+  return data.genres;
+});
 
 export async function searchTitles(
   media: MediaType,
@@ -102,6 +98,27 @@ export async function searchTitles(
   const data = await tmdbFetch<MoviePage>(`search/${media}`, { query, page }, false);
   return normalizePage(data, media);
 }
+
+/**
+ * TMDB's own related-titles list, for the "More Like This" row.
+ *
+ * The sibling `similar` endpoint is deliberately unused: it's genre-bucket
+ * matching, not recommendations — /movie/1064215/similar reports 143,158
+ * results and puts "Herbie Rides Again" at the top for a Turkish animation.
+ *
+ * Kept off MovieDetails on purpose. Appending it to getTitleDetails would save
+ * a request, but MovieDetails is serialized to the client by
+ * fetchWatchlistMovies, so every collection entry would drag 20 unread movie
+ * objects across the wire.
+ */
+export const getRecommendations = cache(
+  async (media: MediaType, id: string): Promise<Movie[]> => {
+    // Same MoviePage shape as the discover/search feeds, so normalizePage
+    // applies unchanged — which is what stamps media_type onto TV results.
+    const data = await tmdbFetch<MoviePage>(`${media}/${id}/recommendations`, {}, 3600);
+    return normalizePage(data, media).results;
+  }
+);
 
 // Raw TMDB detail payload — movie and tv fields overlap but differ enough that
 // we normalize to MovieDetails before it leaves this module.

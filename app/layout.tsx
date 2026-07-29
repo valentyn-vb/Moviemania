@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     template: '%s | Moviemania',
   },
   description:
-    'Browse trending, upcoming and top-rated movies. Powered by TMDB.',
+    'Browse and filter movies and TV shows by genre, year, rating and more. Powered by TMDB.',
 };
 
 export default function RootLayout({

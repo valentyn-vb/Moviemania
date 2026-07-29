@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { getTitleDetails } from "@/lib/tmdb";
 import type { MediaType, MovieDetails } from "@/lib/types";
@@ -7,6 +8,8 @@ import Trailer from "@/components/Trailer";
 import MovieActions from "@/components/MovieActions";
 import BackButton from "@/components/BackButton";
 import NavLink from "@/components/NavLink";
+import Recommendations from "@/components/Recommendations";
+import Loader from "@/components/Loader";
 import { getMovieStatus } from "@/app/watchlist/actions";
 
 const tabClass =
@@ -95,6 +98,11 @@ export default async function TitleDetailLayout({
       </div>
 
       {children}
+
+      {/* Its own fetch, so it streams in rather than holding up the trailer. */}
+      <Suspense fallback={<Loader />}>
+        <Recommendations mediaType={mediaType} id={id} />
+      </Suspense>
     </div>
   );
 }
