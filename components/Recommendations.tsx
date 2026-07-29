@@ -1,6 +1,6 @@
-import { getRecommendations } from "@/lib/tmdb";
-import MovieCard from "@/components/MovieCard";
-import type { MediaType } from "@/lib/types";
+import MovieCard from '@/components/MovieCard';
+import { getRecommendations } from '@/lib/tmdb';
+import type { MediaType } from '@/lib/types';
 
 // TMDB returns 20; a full extra page of cards under the cast grid overwhelms
 // the title you're actually looking at.
@@ -33,9 +33,9 @@ export default async function Recommendations({
     // zeroes those elements' margins from an unlayered rule, which outranks
     // Tailwind's margin utilities.
     <section className="mt-8 flex flex-col gap-4">
-      <h3 className="font-normal text-light">More Like This</h3>
+      <h3 className="text-light font-bold ">More Like This</h3>
       <ul className="flex flex-col items-center gap-8 pc:flex-row pc:flex-wrap pc:justify-center">
-        {items.slice(0, LIMIT).map((movie) => (
+        {items.slice(0, LIMIT).map(movie => (
           <MovieCard key={movie.id} movie={movie} />
         ))}
       </ul>

@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useState } from "react";
-import { useInView } from "react-intersection-observer";
-import MovieCard from "./MovieCard";
-import Loader from "./Loader";
-import BackToTopButton from "./BackToTopButton";
-import type { Movie } from "@/lib/types";
+import type { Movie } from '@/lib/types';
+import { useEffect, useRef, useState } from 'react';
+import { useInView } from 'react-intersection-observer';
+import BackToTopButton from './BackToTopButton';
+import Loader from './Loader';
+import MovieCard from './MovieCard';
 
 interface MovieListProps {
   initialMovies: Movie[];
@@ -35,7 +35,7 @@ export default function MovieList({
 
   const { ref: topRef, inView: topInView } = useInView({ threshold: 0 });
   const { ref: loadRef, inView: loadInView } = useInView({
-    rootMargin: "200px",
+    rootMargin: '200px',
     threshold: 0,
   });
 
@@ -50,17 +50,18 @@ export default function MovieList({
     fetch(`/api/movies?${queryString}&page=${nextPage}`, {
       signal: controller.signal,
     })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to load more movies");
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to load more movies');
         return res.json() as Promise<{ results: Movie[]; total_pages: number }>;
       })
-      .then((data) => {
-        setMovies((prev) => [...prev, ...data.results]);
+      .then(data => {
+        setMovies(prev => [...prev, ...data.results]);
         setPage(nextPage);
         setHasNextPage(nextPage < data.total_pages);
       })
       .catch((err: unknown) => {
-        if (err instanceof Error && err.name !== "AbortError") setError(err.message);
+        if (err instanceof Error && err.name !== 'AbortError')
+          setError(err.message);
       })
       .finally(() => {
         fetchingRef.current = false;
@@ -74,20 +75,26 @@ export default function MovieList({
   }, [loadInView, hasNextPage, page, queryString]);
 
   if (movies.length === 0) {
-    return <p className="p-4 font-normal text-light">Sorry, no movies found for this search :(</p>;
+    return (
+      <p className="p-4 font-normal text-light">
+        Sorry, no movies found for this search :(
+      </p>
+    );
   }
 
   return (
     <>
-      <div ref={topRef} aria-hidden className="h-px w-full" />
-      <ul className="mt-8 flex flex-col items-center gap-8 pc:flex-row pc:flex-wrap pc:justify-center">
-        {movies.map((movie) => (
+      <div ref={topRef} aria-hidden className="h-px w-full " />
+      <ul className="mt-8 flex flex-col items-center gap-8 pc:flex-row pc:flex-wrap pc:justify-center !mt-4">
+        {movies.map(movie => (
           <MovieCard key={movie.id} movie={movie} />
         ))}
       </ul>
       <div ref={loadRef} aria-hidden className="h-px w-full" />
       {isLoading && <Loader />}
-      {error && <p className="p-4 text-light">Whoops, something went wrong: {error}</p>}
+      {error && (
+        <p className="p-4 text-light">Whoops, something went wrong: {error}</p>
+      )}
       {!topInView && <BackToTopButton />}
     </>
   );

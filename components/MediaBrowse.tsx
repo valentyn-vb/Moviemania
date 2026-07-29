@@ -1,11 +1,11 @@
-import { Suspense } from "react";
-import Searchbar from "./Searchbar";
-import FilterBar from "./FilterBar";
-import MovieList from "./MovieList";
-import Loader from "./Loader";
-import { discoverTitles, getGenres, searchTitles } from "@/lib/tmdb";
-import { parseFilters, serializeFilters, type Filters } from "@/lib/filters";
-import type { MediaType } from "@/lib/types";
+import { parseFilters, serializeFilters, type Filters } from '@/lib/filters';
+import { discoverTitles, getGenres, searchTitles } from '@/lib/tmdb';
+import type { MediaType } from '@/lib/types';
+import { Suspense } from 'react';
+import FilterBar from './FilterBar';
+import Loader from './Loader';
+import MovieList from './MovieList';
+import Searchbar from './Searchbar';
 
 // The browse + search view for one media type, shared by /movies and /tv. Both
 // modes live on one route because both are just search params: `?query=` runs a
@@ -15,7 +15,13 @@ import type { MediaType } from "@/lib/types";
 // no genre, sort or vote params, so the filter bar would silently do nothing
 // against a search. It's hidden while a query is active.
 
-async function SearchResults({ media, query }: { media: MediaType; query: string }) {
+async function SearchResults({
+  media,
+  query,
+}: {
+  media: MediaType;
+  query: string;
+}) {
   const data = await searchTitles(media, query, 1);
   return (
     <MovieList
@@ -28,7 +34,13 @@ async function SearchResults({ media, query }: { media: MediaType; query: string
   );
 }
 
-async function BrowseResults({ media, filters }: { media: MediaType; filters: Filters }) {
+async function BrowseResults({
+  media,
+  filters,
+}: {
+  media: MediaType;
+  filters: Filters;
+}) {
   const data = await discoverTitles(media, filters, 1);
   const qs = serializeFilters(media, filters);
   return (
@@ -57,7 +69,8 @@ export default async function MediaBrowse({
 }) {
   const params = await searchParams;
   const rawQuery = params.query;
-  const query = (Array.isArray(rawQuery) ? rawQuery[0] : rawQuery)?.trim() ?? "";
+  const query =
+    (Array.isArray(rawQuery) ? rawQuery[0] : rawQuery)?.trim() ?? '';
   const filters = parseFilters(media, params);
 
   return (
@@ -75,7 +88,10 @@ export default async function MediaBrowse({
           <Suspense fallback={<div className="mt-8 h-[42px]" />}>
             <BrowseFilters media={media} />
           </Suspense>
-          <Suspense key={serializeFilters(media, filters)} fallback={<Loader />}>
+          <Suspense
+            key={serializeFilters(media, filters)}
+            fallback={<Loader />}
+          >
             <BrowseResults media={media} filters={filters} />
           </Suspense>
         </>
