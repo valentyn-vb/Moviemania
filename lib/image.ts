@@ -9,6 +9,11 @@ const IMAGE_BASE = "https://image.tmdb.org/t/p/";
 export const POSTER_SIZE = "w342";
 export const PROFILE_SIZE = "h632";
 
+// Backdrops only render at hero scale (full content-column width), so the
+// second-largest size is the useful one — w1280 rather than `original`, which
+// ships multi-megabyte source files.
+export const BACKDROP_SIZE = "w1280";
+
 export function tmdbImg(path: string, size: string = POSTER_SIZE): string {
   return `${IMAGE_BASE}${size}${path}`;
 }

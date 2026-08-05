@@ -1,7 +1,8 @@
 # Moviemania
 
-A movie browser (trending / upcoming / top-rated, search, details, and a
-localStorage watchlist) powered by [TMDB](https://www.themoviedb.org/).
+A movie and TV browser — a curated home page, filterable listings, title and
+person details, and a per-account collection — powered by
+[TMDB](https://www.themoviedb.org/).
 
 Built with **Next.js 16 (App Router)**, **React 19**, **TypeScript**, and
 **Tailwind CSS v4**. Movie data is fetched in React Server Components / a route
@@ -15,15 +16,25 @@ handler / a server action, so the TMDB API key stays server-side.
    npm install
    ```
 
-2. Create `.env.local` (copy `.env.example`) and set your TMDB v3 API key:
+2. Create `.env.local` (copy `.env.example`) and fill in all three values:
 
    ```bash
    TMDB_API_KEY=your_tmdb_api_key_here
+   DATABASE_URL=postgres://...
+   SESSION_SECRET=$(openssl rand -base64 32)
    ```
 
-   Get a key at https://www.themoviedb.org/settings/api.
+   Get a TMDB key at https://www.themoviedb.org/settings/api. Sign-in and the
+   collection need the database and session secret; browsing needs only the key.
 
-3. Run the dev server:
+3. Start Postgres and apply migrations:
+
+   ```bash
+   npm run db:up
+   npm run db:migrate
+   ```
+
+4. Run the dev server:
 
    ```bash
    npm run dev
@@ -42,16 +53,22 @@ handler / a server action, so the TMDB API key stays server-side.
 ## Architecture
 
 - `app/` — App Router routes.
-  - `home/[category]` — trending / upcoming / top_rated tabs (SSG + ISR, 1h revalidate).
-  - `movies` — search results (`?query=`).
-  - `movies/[movieId]` — details in the layout; `cast` and `reviews` render into it
-    (data deduped across them via React `cache()`).
-  - `watchlist` — client page; reads localStorage ids and fetches via a server action.
+  - `/` — home page: a trending hero, three curated rails (trending today, in
+    theatres, top rated) and the cast of this week's trending films. Every
+    section streams under its own `Suspense` and fails soft.
+  - `movies` / `tv` — browse and search. Filter state lives entirely in the
+    search params (see `lib/filters.ts`); `?query=` switches to search.
+  - `movies/[movieId]` and `tv/[tvId]` — details in the layout; `cast` and
+    `reviews` render into it (data deduped across them via React `cache()`).
+  - `person/[personId]` — bio and filmography.
+  - `sign-in` / `sign-up` — session auth (jose-signed cookie, bcrypt hashes).
+  - `watchlist` — auth-gated collection with `watched` and `favorites` tabs,
+    stored in Postgres and read through server actions in `watchlist/actions.ts`.
   - `api/movies` — GET route handler backing infinite scroll.
-- `lib/tmdb.ts` — server-only TMDB data layer (`import "server-only"`).
-- `lib/watchlist.ts` — client watchlist store (`useSyncExternalStore` over localStorage).
-- `components/` — UI. Only `MovieList`, `Searchbar`, `Header`'s menu, `NavLink`,
-  `WatchlistButton`, `BackButton`, and `BackToTopButton` are client components.
+- `lib/tmdb.ts` — server-only TMDB data layer (`import "server-only"`), 1h ISR.
+- `lib/db/` — Drizzle schema, migrations and the postgres.js client.
+- `components/` — UI, mostly server components; the client ones are marked
+  `"use client"` (menus, filters, search, forms, infinite scroll, theme).
 
 ## Deploying to Vercel
 

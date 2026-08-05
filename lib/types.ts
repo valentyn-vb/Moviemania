@@ -62,6 +62,16 @@ export interface CastMember {
   profile_path: string | null;
 }
 
+/** One face in the home page's people row — see getTrendingPeople. */
+export interface PersonSummary {
+  id: number;
+  name: string;
+  /** Never null here: the row only keeps people TMDB has a photo for. */
+  profile_path: string;
+  /** The trending title they're billed highest in, used as the caption. */
+  knownFor: string;
+}
+
 export interface CrewMember {
   id: number;
   name: string;

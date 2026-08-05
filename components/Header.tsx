@@ -10,7 +10,7 @@ export default async function Header() {
   return (
     <header className="relative flex items-center justify-between bg-secondary py-8 pc:sticky pc:top-0 pc:flex pc:h-screen pc:flex-col pc:items-stretch pc:justify-start pc:overflow-y-auto">
       <Link
-        href="/movies"
+        href="/"
         className="block cursor-pointer pl-8 font-heading text-l text-accent no-underline pc:mb-16"
       >
         Moviemania

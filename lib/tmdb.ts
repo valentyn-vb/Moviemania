@@ -9,6 +9,7 @@ import type {
   MoviePage,
   PersonCredit,
   PersonDetails,
+  PersonSummary,
   WatchlistItem,
 } from "./types";
 
@@ -96,6 +97,30 @@ export async function discoverTitles(
 export const getGenres = cache(async (media: MediaType): Promise<Genre[]> => {
   const data = await tmdbFetch<{ genres: Genre[] }>(`genre/${media}/list`, {}, 86400);
   return data.genres;
+});
+
+export type TrendingWindow = "day" | "week";
+
+/**
+ * The home page's curated feeds. These are the endpoints lib/filters.ts rules
+ * out for the browse listings — /trending accepts only `language` and the
+ * /movie/* lists accept only `page` and `region`, so neither can carry a sort
+ * or a genre. The home page applies no filters, so that objection doesn't
+ * apply here and the hand-curated ordering is exactly what's wanted.
+ */
+export const getTrending = cache(
+  async (media: MediaType, timeWindow: TrendingWindow): Promise<Movie[]> => {
+    const data = await tmdbFetch<MoviePage>(`trending/${media}/${timeWindow}`, {}, 3600);
+    return normalizePage(data, media).results;
+  }
+);
+
+export type MovieListName = "popular" | "top_rated" | "upcoming" | "now_playing";
+
+export const getMovieList = cache(async (list: MovieListName): Promise<Movie[]> => {
+  // now_playing and upcoming also return a `dates` window we don't render.
+  const data = await tmdbFetch<MoviePage>(`movie/${list}`, {}, 3600);
+  return normalizePage(data, "movie").results;
 });
 
 export async function searchTitles(
@@ -263,4 +288,83 @@ export async function getTitlesByRef(refs: WatchlistItem[]): Promise<MovieDetail
   return settled
     .filter((r): r is PromiseFulfilledResult<MovieDetails> => r.status === "fulfilled")
     .map((r) => r.value);
+}
+
+// How many trending films to mine for faces, and how deep into each one's
+// billing to look. Past the top ten a cast list is bit parts and voice cameos.
+const PEOPLE_SOURCE_TITLES = 8;
+const PEOPLE_BILLING_DEPTH = 10;
+
+interface CastTally {
+  person: PersonSummary;
+  /** Films in the sample they appear in — the primary ranking signal. */
+  films: number;
+  /** Best (lowest) billing position reached across those films. */
+  billing: number;
+  /** Position of that film in the trending list, as the final tiebreak. */
+  rank: number;
+}
+
+/**
+ * The faces behind this week's trending films.
+ *
+ * Derived rather than fetched because TMDB has no usable "popular people"
+ * feed: /person/popular and /trending/person both rank on raw `popularity`,
+ * which puts obscure and adult-film names above the likes of Tom Holland, and
+ * `include_adult=false` does not filter them — TMDB silently drops unknown
+ * query params (verified: the response is byte-identical with and without it,
+ * and a nonsense param still returns 200; same trap as the trending note in
+ * lib/filters.ts). /trending/person doesn't even return `known_for`.
+ *
+ * Aggregating the billed cast of the trending titles costs no extra requests:
+ * getTitleDetails already appends credits and is cache()-wrapped, so the
+ * hero's fetch of the top trending film is deduped against this one.
+ */
+export async function getTrendingPeople(limit = 14): Promise<PersonSummary[]> {
+  const trending = await getTrending("movie", "week");
+  const details = await getTitlesByRef(
+    trending.slice(0, PEOPLE_SOURCE_TITLES).map((movie) => ({
+      id: movie.id,
+      mediaType: "movie" as const,
+    }))
+  );
+
+  const tallies = new Map<number, CastTally>();
+
+  details.forEach((title, rank) => {
+    // TMDB returns cast in billing order, so the array index is the position.
+    title.credits.cast.slice(0, PEOPLE_BILLING_DEPTH).forEach((actor, billing) => {
+      if (!actor.profile_path) return;
+
+      const seen = tallies.get(actor.id);
+      if (!seen) {
+        tallies.set(actor.id, {
+          person: {
+            id: actor.id,
+            name: actor.name,
+            profile_path: actor.profile_path,
+            knownFor: title.title,
+          },
+          films: 1,
+          billing,
+          rank,
+        });
+        return;
+      }
+
+      // Caption them with whichever of the trending films they lead, not
+      // whichever happens to come first in the feed.
+      seen.films += 1;
+      if (billing < seen.billing) {
+        seen.billing = billing;
+        seen.rank = rank;
+        seen.person.knownFor = title.title;
+      }
+    });
+  });
+
+  return [...tallies.values()]
+    .sort((a, b) => b.films - a.films || a.billing - b.billing || a.rank - b.rank)
+    .slice(0, limit)
+    .map((tally) => tally.person);
 }

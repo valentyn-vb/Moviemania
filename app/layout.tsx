@@ -53,7 +53,10 @@ export default function RootLayout({
         >
           <div className="pc:grid pc:min-h-screen pc:grid-cols-[minmax(256px,290px)_5fr]">
             <Header />
-            <section className="px-4 py-8">{children}</section>
+            {/* min-w-0: a grid item defaults to min-width:auto, which lets
+                wide content (the home page's scrolling rails) push the column
+                past its track instead of scrolling inside it. */}
+            <section className="min-w-0 px-4 py-8">{children}</section>
           </div>
         </ThemeProvider>
       </body>
