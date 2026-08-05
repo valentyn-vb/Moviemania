@@ -1,7 +1,10 @@
 import Header from '@/components/Header';
+import SidebarShell from '@/components/SidebarShell';
 import ThemeProvider from '@/components/ThemeProvider';
+import { SIDEBAR_COOKIE } from '@/lib/sidebar';
 import type { Metadata } from 'next';
 import { Permanent_Marker, Poppins } from 'next/font/google';
+import { cookies } from 'next/headers';
 import './globals.css';
 
 const poppins = Poppins({
@@ -34,9 +37,12 @@ export const metadata: Metadata = {
     'Browse and filter movies and TV shows by genre, year, rating and more. Powered by TMDB.',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const sidebarOpen =
+    (await cookies()).get(SIDEBAR_COOKIE)?.value !== 'collapsed';
+
   return (
     // suppressHydrationWarning: next-themes sets data-theme on <html> before
     // hydration, so the server/client attribute mismatch here is expected.
@@ -51,13 +57,12 @@ export default function RootLayout({
           defaultTheme="dark"
           enableSystem={false}
         >
-          <div className="pc:grid pc:min-h-screen pc:grid-cols-[minmax(256px,290px)_5fr]">
-            <Header />
+          <SidebarShell defaultOpen={sidebarOpen} sidebar={<Header />}>
             {/* min-w-0: a grid item defaults to min-width:auto, which lets
                 wide content (the home page's scrolling rails) push the column
                 past its track instead of scrolling inside it. */}
             <section className="min-w-0 px-4 py-8">{children}</section>
-          </div>
+          </SidebarShell>
         </ThemeProvider>
       </body>
     </html>
